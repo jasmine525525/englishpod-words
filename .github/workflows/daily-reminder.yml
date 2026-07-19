@@ -2,9 +2,9 @@ name: 每日 EnglishPod 单词提醒
 
 on:
   schedule:
-    # UTC 23:00 = 北京时间 07:00（GitHub Actions cron 用 UTC）
-    - cron: '0 23 * * *'
-  workflow_dispatch: # 允许手动触发，方便测试
+    # UTC 23:00 = 北京时间 07:00
+    - cron: "0 23 * * *"
+  workflow_dispatch:  # 允许手动触发测试
 
 jobs:
   notify:
@@ -14,11 +14,5 @@ jobs:
         env:
           SENDKEY: ${{ secrets.SENDKEY }}
         run: |
-          RESPONSE=$(curl -sS -X POST "https://sctapi.ftqq.com/${SENDKEY}.send" \
-            -d "title=EnglishPod 单词学习提醒" \
-            -d "desp=早安～今天也要记得学 EnglishPod 单词哦，打开音频一起练起来吧。
-
-📖 [点这里打开单词手册](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/)
-
-共 179 期、1658 个词条，按编号倒序，每条含音标、词性、中文释义和原句例句。")
+          RESPONSE=
           echo "Server酱返回: $RESPONSE"
