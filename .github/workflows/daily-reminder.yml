@@ -9,10 +9,30 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 需要写权限来保存推送进度
     steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: 发送微信通知
         env:
           SENDKEY: ${{ secrets.SENDKEY }}
+        run: python3 push.py
+
+      - name: 提交推送进度
         run: |
-          RESPONSE=
-          echo "Server酱返回: $RESPONSE"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet progress.json; then
+            echo "进度无变化，跳过提交"
+          else
+            git add progress.json
+            git commit -m "更新推送进度"
+            git push
+          fi
