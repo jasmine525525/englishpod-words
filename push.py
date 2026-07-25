@@ -10,13 +10,28 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.parse
 import urllib.request
+from datetime import datetime, timezone, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 INDEX_HTML = os.path.join(SCRIPT_DIR, "index.html")
 PROGRESS_FILE = os.path.join(SCRIPT_DIR, "progress.json")
 PAGES_URL = "https://jasmine525525.github.io/englishpod-words/"
+
+# 只在这个时间窗口内推送（北京时间），防止 GitHub Actions 延迟触发导致多发
+# 手动触发(workflow_dispatch)时不受此限制
+PUSH_HOUR_START = 6   # 北京时间 6:00
+PUSH_HOUR_END = 10    # 北京时间 10:00
+
+
+def is_in_push_window():
+    """检查当前北京时间是否在推送时间窗口内"""
+    tz_bj = timezone(timedelta(hours=8))
+    now_bj = datetime.now(tz_bj)
+    hour = now_bj.hour
+    return PUSH_HOUR_START <= hour < PUSH_HOUR_END
 
 
 def parse_episodes():
@@ -170,6 +185,15 @@ def main():
     if not sendkey:
         print("错误：环境变量 SENDKEY 未设置", file=sys.stderr)
         sys.exit(1)
+
+    # 时间守卫：非推送时段直接退出，不推送也不推进进度
+    # 手动触发时跳过此检查（设置 SKIP_TIME_CHECK=1）
+    skip_check = os.environ.get("SKIP_TIME_CHECK", "0") == "1"
+    if not skip_check and not is_in_push_window():
+        tz_bj = timezone(timedelta(hours=8))
+        now_bj = datetime.now(tz_bj)
+        print(f"当前北京时间 {now_bj.strftime('%H:%M')}，不在推送时段({PUSH_HOUR_START}:00-{PUSH_HOUR_END}:00)，跳过本次推送")
+        return  # 正常退出，不推进进度
 
     episodes = parse_episodes()
     total = len(episodes)

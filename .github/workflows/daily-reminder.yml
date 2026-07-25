@@ -23,6 +23,8 @@ jobs:
       - name: 发送微信通知
         env:
           SENDKEY: ${{ secrets.SENDKEY }}
+          # 手动触发时跳过时间窗口检查，定时触发时检查
+          SKIP_TIME_CHECK: ${{ github.event_name == 'workflow_dispatch' }}
         run: python3 push.py
 
       - name: 提交推送进度
