@@ -2,8 +2,11 @@ name: 每日 EnglishPod 单词提醒
 
 on:
   schedule:
-    # UTC 23:00 = 北京时间 07:00
-    - cron: "0 23 * * *"
+    # 多个时间点冗余触发，防止 GitHub Actions 跳过
+    # 时间守卫保证每天只推一次，重复触发会自动跳过
+    - cron: "0 23 * * *"   # UTC 23:00 = 北京 07:00（主）
+    - cron: "30 23 * * *"  # UTC 23:30 = 北京 07:30（备）
+    - cron: "0 0 * * *"    # UTC 00:00 = 北京 08:00（备）
   workflow_dispatch:  # 允许手动触发测试
 
 jobs:

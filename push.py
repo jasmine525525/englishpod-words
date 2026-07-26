@@ -180,6 +180,12 @@ def send_serverchan(sendkey, title, desp):
         return -1, str(e)
 
 
+def get_today_str():
+    """获取今天的日期字符串（北京时间）"""
+    tz_bj = timezone(timedelta(hours=8))
+    return datetime.now(tz_bj).strftime("%Y-%m-%d")
+
+
 def main():
     sendkey = os.environ.get("SENDKEY", "").strip()
     if not sendkey:
@@ -208,6 +214,13 @@ def main():
     if idx >= total:
         idx = 0
 
+    # 去重守卫：如果今天已经推过，跳过（防止多个 cron 重复推送）
+    today = get_today_str()
+    last_push_date = progress.get("last_push_date", "")
+    if not skip_check and last_push_date == today:
+        print(f"今天（{today}）已经推��过，跳过本次触发")
+        return  # 正常退出，不重复推送
+
     ep = episodes[idx]
 
     # 推送标题：取期号+主题前两个词
@@ -233,6 +246,7 @@ def main():
 
     if success:
         progress["index"] = idx + 1
+        progress["last_push_date"] = today  # 记录今天已推过
         progress["history"].append({
             "index": idx,
             "title": ep["title"],
