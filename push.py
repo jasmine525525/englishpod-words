@@ -23,7 +23,7 @@ PAGES_URL = "https://jasmine525525.github.io/englishpod-words/"
 # 只在这个时间窗口内推送（北京时间），防止 GitHub Actions 延迟触发导致多发
 # 手动触发(workflow_dispatch)时不受此限制
 PUSH_HOUR_START = 6   # 北京时间 6:00
-PUSH_HOUR_END = 10    # 北京时间 10:00
+PUSH_HOUR_END = 11    # 北京时间 11:00
 
 
 def is_in_push_window():
@@ -193,8 +193,8 @@ def main():
         sys.exit(1)
 
     # 时间守卫：非推送时段直接退出，不推送也不推进进度
-    # 手动触发时跳过此检查（设置 SKIP_TIME_CHECK=1）
-    skip_check = os.environ.get("SKIP_TIME_CHECK", "0") == "1"
+    # 手动触发时跳过此检查（设置 SKIP_TIME_CHECK=true 或 1）
+    skip_check = os.environ.get("SKIP_TIME_CHECK", "0").lower() in ("1", "true", "yes")
     if not skip_check and not is_in_push_window():
         tz_bj = timezone(timedelta(hours=8))
         now_bj = datetime.now(tz_bj)
