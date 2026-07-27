@@ -2,11 +2,11 @@ name: 每日 EnglishPod 单词提醒
 
 on:
   schedule:
-    # 多个时间点冗余触发，防止 GitHub Actions 跳过
-    # 时间守卫保证每天只推一次，重复触发会自动跳过
-    - cron: "0 23 * * *"   # UTC 23:00 = 北京 07:00（主）
-    - cron: "30 23 * * *"  # UTC 23:30 = 北京 07:30（备）
-    - cron: "0 0 * * *"    # UTC 00:00 = 北京 08:00（备）
+    # GitHub Actions 定时任务经常延迟数小时甚至跳过
+    # 设置多个时间点提高命中率，去重逻辑保证每天只推一次
+    - cron: "0 0 * * *"     # UTC 00:00 = 北京 08:00
+    - cron: "0 6 * * *"     # UTC 06:00 = 北京 14:00
+    - cron: "0 12 * * *"    # UTC 12:00 = 北京 20:00
   workflow_dispatch:  # 允许手动触发测试
 
 jobs:
@@ -26,8 +26,6 @@ jobs:
       - name: 发送微信通知
         env:
           SENDKEY: ${{ secrets.SENDKEY }}
-          # 手动触发时跳过时间窗口检查，定时触发时检查
-          SKIP_TIME_CHECK: ${{ github.event_name == 'workflow_dispatch' }}
         run: python3 push.py
 
       - name: 提交推送进度

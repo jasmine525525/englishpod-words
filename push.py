@@ -192,15 +192,6 @@ def main():
         print("错误：环境变量 SENDKEY 未设置", file=sys.stderr)
         sys.exit(1)
 
-    # 时间守卫：非推送时段直接退出，不推送也不推进进度
-    # 手动触发时跳过此检查（设置 SKIP_TIME_CHECK=true 或 1）
-    skip_check = os.environ.get("SKIP_TIME_CHECK", "0").lower() in ("1", "true", "yes")
-    if not skip_check and not is_in_push_window():
-        tz_bj = timezone(timedelta(hours=8))
-        now_bj = datetime.now(tz_bj)
-        print(f"当前北京时间 {now_bj.strftime('%H:%M')}，不在推送时段({PUSH_HOUR_START}:00-{PUSH_HOUR_END}:00)，跳过本次推送")
-        return  # 正常退出，不推进进度
-
     episodes = parse_episodes()
     total = len(episodes)
     if total == 0:
